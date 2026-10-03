@@ -175,7 +175,6 @@ def run_futures_strategy():
     # --- NO ACTIVE POSITION ---
     if current_position is None:
         if long_signal:
-            print("\n📈 CONFIRMED LONG SIGNAL DETECTED! Opening Long Position...")
             entry_price = current_price
             target_price = entry_price * 1.015      # +1.5% Profit
             stop_loss_price = entry_price * 0.990    # -1.0% Stop Loss
@@ -185,9 +184,12 @@ def run_futures_strategy():
 
             current_position = 'LONG'
             total_trades += 1
-            print(f"LONG Entry: ${entry_price} | Qty: {trade_quantity} BTC | Target: ${round(target_price,2)} | SL:${round(stop_loss_price,2)}")
+            
+            msg = f"📈 *LONG Trade Opened*\n• Entry: `${entry_price}`\n• Qty: `{trade_quantity}` BTC\n• Target: `${round(target_price,2)}` (+1.5%)\n• SL: `${round(stop_loss_price,2)}` (-1.0%)"
+            print("\n" + msg)
+            send_telegram_message(msg)
+
         elif short_signal:
-            print("\n📉 CONFIRMED SHORT SIGNAL DETECTED! Opening Short Position...")
             entry_price = current_price
             target_price = entry_price * 0.985      # +1.5% Profit
             stop_loss_price = entry_price * 1.010    # -1.0% Stop Loss
@@ -197,24 +199,34 @@ def run_futures_strategy():
 
             current_position = 'SHORT'
             total_trades += 1
-            print(f"SHORT Entry: ${entry_price} | Qty: {trade_quantity} BTC | Target: ${round(target_price,2)} | SL:${round(stop_loss_price,2)}")
+
+            msg = f"📉 *SHORT Trade Opened*\n• Entry: `${entry_price}`\n• Qty: `{trade_quantity}` BTC\n• Target: `${round(target_price,2)}` (+1.5%)\n• SL: `${round(stop_loss_price,2)}` (-1.0%)"
+            print("\n" + msg)
+            send_telegram_message(msg)
+
     # --- MANAGING LONG POSITION ---
     elif current_position == 'LONG':
         if current_price >= target_price:
             pnl = (target_price - entry_price) * trade_quantity
             total_profit_usdt += pnl
             target_hits += 1
-            print(f"\n🎯 LONG TARGET REACHED! Profit: +${round(pnl, 2)}")
             # place_futures_order(side="sell", position_intent="close_long", quantity=trade_quantity)
             current_position = None
+
+            msg = f"🎯 *LONG TARGET REACHED!*\n• Exit Price: `${current_price}`\n• Profit: *+${round(pnl, 2)} USDT*"
+            print("\n" + msg)
+            send_telegram_message(msg)
 
         elif current_price <= stop_loss_price:
             pnl = (entry_price - stop_loss_price) * trade_quantity
             total_loss_usdt += pnl
             sl_hits += 1
-            print(f"\n🛑 LONG STOP LOSS HIT! Loss: -${round(pnl, 2)}")
             # place_futures_order(side="sell", position_intent="close_long", quantity=trade_quantity)
             current_position = None
+
+            msg = f"🛑 *LONG STOP LOSS HIT!*\n• Exit Price: `${current_price}`\n• Loss: *-${round(pnl, 2)} USDT*"
+            print("\n" + msg)
+            send_telegram_message(msg)
 
     # --- MANAGING SHORT POSITION ---
     elif current_position == 'SHORT':
@@ -222,17 +234,23 @@ def run_futures_strategy():
             pnl = (entry_price - target_price) * trade_quantity
             total_profit_usdt += pnl
             target_hits += 1
-            print(f"\n🎯 SHORT TARGET REACHED! Profit: +${round(pnl, 2)}")
             # place_futures_order(side="buy", position_intent="close_short", quantity=trade_quantity)
             current_position = None
+
+            msg = f"🎯 *SHORT TARGET REACHED!*\n• Exit Price: `${current_price}`\n• Profit: *+${round(pnl, 2)} USDT*"
+            print("\n" + msg)
+            send_telegram_message(msg)
 
         elif current_price >= stop_loss_price:
             pnl = (stop_loss_price - entry_price) * trade_quantity
             total_loss_usdt += pnl
             sl_hits += 1
-            print(f"\n🛑 SHORT STOP LOSS HIT! Loss: -${round(pnl, 2)}")
             # place_futures_order(side="buy", position_intent="close_short", quantity=trade_quantity)
             current_position = None
+
+            msg = f"🛑 *SHORT STOP LOSS HIT!*\n• Exit Price: `${current_price}`\n• Loss: *-${round(pnl, 2)} USDT*"
+            print("\n" + msg)
+            send_telegram_message(msg)
 
     # --- 12-HOUR PERFORMANCE REPORT ---
     if loop_count % 48 == 0:
