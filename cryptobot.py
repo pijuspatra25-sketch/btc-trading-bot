@@ -7,7 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/116sLP0fn3A1sGGwefS_eTcsbWhCz-PG8
 """
 
-!pip install requests pandas ccxt ta
 
 import time
 import requests
