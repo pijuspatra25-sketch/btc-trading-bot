@@ -185,8 +185,7 @@ def run_futures_strategy():
 
             current_position = 'LONG'
             total_trades += 1
-            print(f"LONG Entry: ${entry_price} | Qty: {trade_quantity} BTC | Target: ${round(target_price,2)} \vert{} SL:${round(stop_loss_price,2)}")
-
+            print(f"LONG Entry: ${entry_price} | Qty: {trade_quantity} BTC | Target: ${round(target_price,2)} | SL:${round(stop_loss_price,2)}")
         elif short_signal:
             print("\n📉 CONFIRMED SHORT SIGNAL DETECTED! Opening Short Position...")
             entry_price = current_price
