@@ -39,7 +39,7 @@ total_loss_usdt = 0.0
 # --- TELEGRAM MESSAGE FUNCTION ---
 def send_telegram_message(message):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        print("⚠️️ Telegram Token/Chat ID missing.")
+        print("⚠️ Telegram Token/Chat ID missing.")
         return
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
