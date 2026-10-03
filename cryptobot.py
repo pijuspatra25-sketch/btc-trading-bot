@@ -1,3 +1,6 @@
+import os
+import threading
+from flask import Flask
 import time
 import requests
 import pandas as pd
@@ -5,6 +8,17 @@ import hmac
 import hashlib
 import json
 import datetime
+
+# --- DUMMY FLASK WEB SERVER FOR RENDER PORT BINDING ---
+app = Flask(__name__)
+
+@app.route('/')
+def health_check():
+    return "BTC Trading Bot is Running 24/7!"
+
+def run_web_server():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
 
 # --- YOUR COINDCX API CREDENTIALS ---
 API_KEY = "b8504fcb8259c47834e79b507cdc45e4b49a8052953fbebc"
@@ -18,8 +32,8 @@ BASE_URL = "https://api.coindcx.com"
 PAIR = "B-BTC_USDT"           # Candle data pair
 FUTURES_MARKET = "BTCUSDT"    # Futures Pair Name
 
-LEVERAGE = 3                  # 3x Safe Leverage
-MARGIN_USAGE_PCT = 0.25       # 25% Wallet Balance per trade
+LEVERAGE = 20                 # 20x Leverage
+MARGIN_USAGE_PCT = 0.25       # 25% Wallet Balance per trade ($12 USDT)
 
 # Position & State Tracking
 current_position = None       # None, 'LONG', or 'SHORT'
@@ -91,12 +105,12 @@ def fetch_futures_candles():
 
     return df
 
-# --- 2. DYNAMIC QUANTITY (25% MARGIN CALCULATION) ---
+# --- 2. DYNAMIC QUANTITY (25% MARGIN CALCULATION WITH 20X LEVERAGE) ---
 def get_calculated_quantity(current_price):
     wallet_balance_usdt = 48.0  # Simulated Balance
 
     used_margin = wallet_balance_usdt * MARGIN_USAGE_PCT  # 25% = $12
-    position_value = used_margin * LEVERAGE                # 3x = $36
+    position_value = used_margin * LEVERAGE                # 20x = $240
 
     btc_qty = round(position_value / current_price, 4)
     return btc_qty if btc_qty >= 0.0001 else 0.001
@@ -184,8 +198,8 @@ def run_futures_strategy():
 
             current_position = 'LONG'
             total_trades += 1
-            
-            msg = f"📈 *LONG Trade Opened*\n• Entry: `${entry_price}`\n• Qty: `{trade_quantity}` BTC\n• Target: `${round(target_price,2)}` (+1.5%)\n• SL: `${round(stop_loss_price,2)}` (-1.0%)"
+
+            msg = f"📈 *LONG Trade Opened (20x)*\n• Entry: `${entry_price}`\n• Qty: `{trade_quantity}` BTC\n• Target: `${round(target_price,2)}` (+1.5%)\n• SL: `${round(stop_loss_price,2)}` (-1.0%)"
             print("\n" + msg)
             send_telegram_message(msg)
 
@@ -200,7 +214,7 @@ def run_futures_strategy():
             current_position = 'SHORT'
             total_trades += 1
 
-            msg = f"📉 *SHORT Trade Opened*\n• Entry: `${entry_price}`\n• Qty: `{trade_quantity}` BTC\n• Target: `${round(target_price,2)}` (+1.5%)\n• SL: `${round(stop_loss_price,2)}` (-1.0%)"
+            msg = f"📉 *SHORT Trade Opened (20x)*\n• Entry: `${entry_price}`\n• Qty: `{trade_quantity}` BTC\n• Target: `${round(target_price,2)}` (+1.5%)\n• SL: `${round(stop_loss_price,2)}` (-1.0%)"
             print("\n" + msg)
             send_telegram_message(msg)
 
@@ -278,6 +292,9 @@ def run_futures_strategy():
 
 # --- 6. 24/7 AUTOMATIC LOOP WITH CLOCK SYNC ---
 if __name__ == "__main__":
+    # Start Dummy Web Server in background thread for Render Port Scan
+    threading.Thread(target=run_web_server, daemon=True).start()
+
     start_msg = "🤖 *BTC Futures Trading Bot Started*\nClock-Synced 15m Strategy Active.\n12-Hour reporting enabled."
     print(start_msg)
     send_telegram_message(start_msg)
