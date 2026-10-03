@@ -197,8 +197,7 @@ def run_futures_strategy():
 
             current_position = 'SHORT'
             total_trades += 1
-            print(f"SHORT Entry: ${entry_price} | Qty: {trade_quantity} BTC | Target: ${round(target_price,2)} \vert{} SL:${round(stop_loss_price,2)}")
-
+            print(f"SHORT Entry: ${entry_price} | Qty: {trade_quantity} BTC | Target: ${round(target_price,2)} | SL:${round(stop_loss_price,2)}")
     # --- MANAGING LONG POSITION ---
     elif current_position == 'LONG':
         if current_price >= target_price:
